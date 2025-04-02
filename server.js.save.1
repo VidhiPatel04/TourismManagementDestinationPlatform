@@ -1,0 +1,226 @@
+const express = require('express');
+const mysql = require('mysql2');
+const bcrypt = require('bcrypt');
+const nodemailer = require('nodemailer');
+const session = require('express-session');
+const path = require('path');
+const app = express();
+
+// Middleware
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({
+    secret: 'your-session-secret', // Replace with a secure secret in production
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false } // Set to true in production with HTTPS
+}));
+
+// MySQL Connection
+const db = mysql.createConnection({
+    host: 'localhost',
+    user: 'travel_app',
+    password: 'SecureAppPass456!',
+    database: 'travel_explorer_db'
+});
+
+db.connect(err => {
+    if (err) {
+        console.error('Error connecting to MySQL:', err);
+        return;
+    }
+    console.log('Connected to MySQL database');
+});
+
+// Nodemailer Setup
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+        user: 'travelexplorer923@gmail.com',
+        pass: 'your-app-specific-password' // Replace with your app-specific password
+    }
+});
+
+// Middleware to check if user is logged in
+const isAuthenticated = (req, res, next) => {
+    if (req.session.user) {
+        return next();
+    }
+    res.status(401).json({ message: 'Please log in to access this page', redirect: '/login.html' });
+};
+
+// Serve index.html only if logged in
+app.get('/index.html', isAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Signup Route
+app.post('/signup', async (req, res) => {
+    const { username, email, password } = req.body;
+    console.log('Signup attempt:', { username, email, password });
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const query = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
+        db.query(query, [username, email, hashedPassword], (err, result) => {
+            if (err) {
+                console.error('Error registering user:', err);
+                if (err.code === 'ER_DUP_ENTRY') {
+                    return res.status(400).json({ message: 'Email or username already exists' });
+                }
+                return res.status(500).json({ message: 'Error registering user' });
+            }
+
+            console.log('User registered:', email);
+
+            const mailOptions = {
+                from: 'travelexplorer923@gmail.com',
+                to: email,
+                subject: 'Welcome to Travel Explorer!',
+                text: `Dear ${username},\n\nWelcome to Travel Explorer! We're excited to have you on board. Start exploring your next adventure today!\n\nBest regards,\nTravel Explorer Team`
+            };
+
+            let attempt = 1;
+            const maxAttempts = 3;
+
+            const sendEmail = () => {
+                console.log(`Attempt ${attempt} to send email to: ${email}`);
+                transporter.sendMail(mailOptions, (error, info) => {
+                    if (error) {
+                        console.error(`Error sending email on attempt ${attempt}:`, error);
+                        if (attempt < maxAttempts) {
+                            attempt++;
+                            setTimeout(sendEmail, 2000);
+                        } else {
+                            console.error('Max email attempts reached');
+                        }
+                    } else {
+                        console.log(`Email sent successfully on attempt ${attempt}:`, info.response);
+                    }
+                });
+            };
+
+            sendEmail();
+
+            res.status(201).json({ message: 'Signup successful! Please login.', redirect: '/login.html' });
+        });
+    } catch (error) {
+        console.error('Error during signup:', error);
+        res.status(500).json({ message: 'Error during signup' });
+    }
+});
+
+// Login Route
+app.post('/login', (req, res) => {
+    const { email, password } = req.body;
+    console.log('Login attempt:', { email, password });
+
+    const query = 'SELECT * FROM users WHERE email = ?';
+    db.query(query, [email], async (err, results) => {
+        if (err) {
+            console.error('Error during login:', err);
+            return res.status(500).json({ message: 'Error during login' });
+        }
+
+        if (results.length === 0) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+
+        const user = results[0];
+        const match = await bcrypt.compare(password, user.password);
+
+        if (!match) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+
+        req.session.user = { id: user.id, email: user.email };
+        console.log('User logged in:', email);
+        res.status(200).json({ message: 'Login successful!', redirect: '/index.html' });
+    });
+});
+
+// Logout Route
+app.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Error during logout:', err);
+            return res.status(500).json({ message: 'Error during logout' });
+        }
+        res.redirect('/login.html');
+    });
+});
+
+// Payment/Booking Route
+app.post('/payment', isAuthenticated, (req, res) => {
+    const { destination, amount, cardNumber, travelDate, travelers, travelerName, paymentMethod } = req.body;
+    console.log('Payment attempt:', { destination, amount, cardNumber, travelDate, travelers, travelerName, paymentMethod });
+
+    const userId = req.session.user.id;
+    const userEmail = req.session.user.email;
+
+    const bookingQuery = `
+        INSERT INTO bookings (user_id, client_name, email, phone, destination, travel_date, travelers, traveler_name, payment_method, card_number, amount)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const bookingValues = [
+        userId,
+        travelerName,
+        userEmail,
+        '+1234567890', // Hardcoded for now, should come from form
+        destination,
+        travelDate,
+        travelers,
+        travelerName,
+        paymentMethod,
+        cardNumber,
+        parseFloat(amount)
+    ];
+
+    db.query(bookingQuery, bookingValues, (err, result) => {
+        if (err) {
+            console.error('Error saving booking:', err);
+            return res.status(500).json({ message: 'Error processing booking' });
+        }
+
+        console.log('Booking saved:', { user: userEmail, destination, travelerName, paymentMethod });
+
+        const mailOptions = {
+            from: 'travelexplorer923@gmail.com',
+            to: userEmail,
+            subject: 'Travel Explorer - Your Booking Confirmation',
+            text: `Dear ${travelerName},\n\nThank you for booking with Travel Explorer! Here are your booking details:\n\nTraveler Name: ${travelerName}\nDestination: ${destination}\nTravel Date: ${travelDate}\nNumber of Travelers: ${travelers}\nPayment Method: ${paymentMethod}\nAmount: $${amount}\n\nWe wish you a wonderful trip!\n\nBest regards,\nTravel Explorer Team`
+        };
+
+        let attempt = 1;
+        const maxAttempts = 3;
+
+        const sendEmail = () => {
+            console.log(`Attempt ${attempt} to send email to: ${userEmail}`);
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error(`Error sending email on attempt ${attempt}:`, error);
+                    if (attempt < maxAttempts) {
+                        attempt++;
+                        setTimeout(sendEmail, 2000);
+                    } else {
+                        console.error('Max email attempts reached');
+                    }
+                } else {
+                    console.log(`Email sent successfully on attempt ${attempt}:`, info.response);
+                }
+            });
+        };
+
+        sendEmail();
+
+        res.status(200).json({ message: 'Booking successful! Receipt downloaded. A confirmation email has been sent to your email.', redirect: '/index.html' });
+    });
+});
+
+// Start the Server
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

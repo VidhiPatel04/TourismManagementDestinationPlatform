@@ -1,0 +1,464 @@
+const express = require('express');
+const mysql = require('mysql2');
+const bcrypt = require('bcrypt');
+const nodemailer = require('nodemailer');
+const session = require('express-session');
+const PDFDocument = require('pdfkit');
+const path = require('path');
+const fs = require('fs');
+const app = express();
+
+// Middleware
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({
+    secret: 'your-session-secret', // Replace with a secure secret in production
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false } // Set to true in production with HTTPS
+}));
+
+// MySQL Connection
+const db = mysql.createConnection({
+    host: 'localhost',
+    user: 'jay_patel',
+    password: 'SecureAppPass456!',
+    database: 'travel_explorer_db'
+});
+
+db.connect(err => {
+    if (err) {
+        console.error('Error connecting to MySQL:', err);
+        return;
+    }
+    console.log('Connected to MySQL database');
+});
+
+// Nodemailer Setup
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+        user: 'travelexplorer923@gmail.com',
+        pass: 'zobr hfns rtze izji' // Replace with your app-specific password
+    }
+});
+
+// Middleware to check if user is logged in
+const isAuthenticated = (req, res, next) => {
+    if (req.session.user) {
+        return next();
+    }
+    res.status(401).json({ message: 'Please log in to access this feature', redirect: '/login.html' });
+};
+
+// Default route to serve index.html
+app.get('/', (req, res) => {
+    res.redirect('/index.html');
+});
+
+// Serve index.html (public)
+app.get('/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Check session status
+app.get('/check-session', (req, res) => {
+    if (req.session.user) {
+        res.json({ isLoggedIn: true });
+    } else {
+        res.json({ isLoggedIn: false });
+    }
+});
+
+// Signup Route with Auto-Login
+app.post('/signup', async (req, res) => {
+    const { username, email, password } = req.body;
+    console.log('Signup attempt:', { username, email, password });
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const query = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
+        db.query(query, [username, email, hashedPassword], (err, result) => {
+            if (err) {
+                console.error('Error registering user:', err);
+                if (err.code === 'ER_DUP_ENTRY') {
+                    return res.status(400).json({ message: 'Email or username already exists' });
+                }
+                return res.status(500).json({ message: 'Error registering user' });
+            }
+
+            console.log('User registered:', email);
+
+            // Auto-login by setting session
+            const userId = result.insertId;
+            req.session.user = { id: userId, email: email };
+            console.log('User auto-logged in:', email);
+
+            // Send welcome email
+            const mailOptions = {
+                from: '"Travel Explorer" <travelexplorer923@gmail.com>',
+                to: email,
+                subject: 'Welcome to Travel Explorer! 🌍',
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                        <div style="text-align: center;">
+                            <h1 style="color: #2c3e50;">Welcome to Travel Explorer!</h1>
+                            <p style="font-size: 16px; color: #666;">Dear ${username},</p>
+                        </div>
+                        <div style="margin: 20px 0;">
+                            <p style="font-size: 16px; color: #333;">We’re thrilled to have you on board! At Travel Explorer, we’re dedicated to helping you discover breathtaking destinations and plan your next adventure with ease.</p>
+                            <p style="font-size: 16px; color: #333;">Start exploring now and let us make your travel dreams a reality.</p>
+                        </div>
+                        <div style="text-align: center; margin: 20px 0;">
+                            <a href="https://10.180.82.20/index.html" style="background-color: #3498db; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">Explore Destinations</a>
+                        </div>
+                        <div style="border-top: 1px solid #e0e0e0; padding-top: 20px; text-align: center;">
+                            <p style="font-size: 14px; color: #666;">Best regards,<br>The Travel Explorer Team</p>
+                            <p style="font-size: 14px; color: #666;">📧 <a href="mailto:support@travelexplorer.com" style="color: #3498db;">support@travelexplorer.com</a> | 📞 +226 899 8936</p>
+                            <p style="font-size: 14px; color: #666;">© 2025 Travel Explorer. All rights reserved.</p>
+                        </div>
+                    </div>
+                `
+            };
+
+            let attempt = 1;
+            const maxAttempts = 3;
+
+            const sendEmail = () => {
+                console.log(`Attempt ${attempt} to send email to: ${email}`);
+                transporter.sendMail(mailOptions, (error, info) => {
+                    if (error) {
+                        console.error(`Error sending email on attempt ${attempt}:`, error);
+                        if (attempt < maxAttempts) {
+                            attempt++;
+                            setTimeout(sendEmail, 2000);
+                        } else {
+                            console.error('Max email attempts reached');
+                        }
+                    } else {
+                        console.log(`Email sent successfully on attempt ${attempt}:`, info.response);
+                    }
+                });
+            };
+
+            sendEmail();
+
+            res.status(201).json({ message: 'Signup successful! You are now logged in.', redirect: '/index.html' });
+        });
+    } catch (error) {
+        console.error('Error during signup:', error);
+        res.status(500).json({ message: 'Error during signup' });
+    }
+});
+
+// Login Route
+app.post('/login', (req, res) => {
+    const { email, password } = req.body;
+    console.log('Login attempt:', { email, password });
+
+    const query = 'SELECT * FROM users WHERE email = ?';
+    db.query(query, [email], async (err, results) => {
+        if (err) {
+            console.error('Error during login:', err);
+            return res.status(500).json({ message: 'Error during login' });
+        }
+
+        if (results.length === 0) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+
+        const user = results[0];
+        const match = await bcrypt.compare(password, user.password);
+
+        if (!match) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+
+        req.session.user = { id: user.id, email: user.email };
+        console.log('User logged in:', email);
+        res.status(200).json({ message: 'Login successful!', redirect: '/index.html' });
+    });
+});
+
+// Logout Route
+app.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Error during logout:', err);
+            return res.status(500).json({ message: 'Error during logout' });
+        }
+        res.status(200).json({ message: 'Logged out successfully', redirect: '/login.html' });
+    });
+});
+
+// Payment/Booking Route (protected)
+app.post('/payment', isAuthenticated, csrf(), (req, res) => {
+    const userId = req.session.user.id;
+    const {
+        clientname,
+        email,
+        phone,
+        destination,
+        departure_date,
+        return_date,
+        passengers,
+        payment_method,
+        payment_amount,
+        payment_status,
+        'cardholder-name': cardholderName,
+        'card-number': cardNumber,
+        expiry,
+        cvv,
+        'street-address': streetAddress,
+        city,
+        state,
+        'zip-code': zipCode
+    } = req.body;
+
+    const maskedCardNumber = cardNumber.slice(-4).padStart(cardNumber.length, '*');
+    const encryptedCvv = encrypt(cvv);
+    const amount = parseFloat(payment_amount);
+
+    const bookingQuery = `
+        INSERT INTO bookings (
+            user_id, client_name, email, phone, destination, departure_date, return_date, passengers,
+            clientname, payment_method, card_number, amount, payment_status, cardholder_name, expiry, cvv,
+            street_address, city, state, zip_code
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const bookingValues = [
+        userId,
+        clientname,
+        email,
+        phone,
+        destination,
+        departure_date,
+        return_date,
+        parseInt(passengers),
+        clientname,
+        payment_method,
+        maskedCardNumber,
+        amount,
+        payment_status,
+        cardholderName,
+        expiry,
+        encryptedCvv,
+        streetAddress,
+        city,
+        state,
+        zipCode
+    ];
+
+    db.query(bookingQuery, bookingValues, (err) => {
+        if (err) {
+            console.error('Error saving booking:', err);
+            return res.status(500).send('Error saving booking');
+        }
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Booking Confirmation - Travel Explorer',
+            text: `Dear ${clientname},\n\nYour booking for ${destination} has been confirmed!\n\nDetails:\n- Departure: ${departure_date}\n- Return: ${return_date}\n- Passengers: ${passengers}\n- Amount: $${amount}\n\nThank you for choosing Travel Explorer!`,
+            attachments: [
+                {
+                    filename: 'receipt.pdf',
+                    path: './receipt.pdf' // Ensure you have a PDF generation mechanism
+                }
+            ]
+        };
+
+        transporter.sendMail(mailOptions, (error) => {
+            if (error) {
+                console.error('Error sending email:', error);
+            }
+        });
+
+        res.redirect('/index.html?message=Booking successful! A confirmation email with your receipt has been sent to your email.');
+    });
+});
+        // Generate Professional PDF Receipt
+        const doc = new PDFDocument({ margin: 50 });
+        const pdfPath = path.join(__dirname, `receipt_${result.insertId}.pdf`);
+        doc.pipe(fs.createWriteStream(pdfPath));
+
+        // Header
+        doc
+            .fillColor('#2c3e50')
+            .fontSize(25)
+            .text('Travel Explorer', 50, 50, { align: 'center' })
+            .fontSize(12)
+            .text('Booking Receipt', 50, 80, { align: 'center' })
+            .moveDown();
+
+        // Line separator
+        doc
+            .strokeColor('#e0e0e0')
+            .lineWidth(1)
+            .moveTo(50, 100)
+            .lineTo(550, 100)
+            .stroke();
+
+        // Booking Details
+        doc
+            .fillColor('#333')
+            .fontSize(14)
+            .text(`Booking ID: ${result.insertId}`, 50, 120)
+            .text(`Date: ${new Date().toLocaleDateString()}`, 50, 140)
+            .moveDown();
+
+        doc
+            .fontSize(16)
+            .fillColor('#2c3e50')
+            .text('Traveler Information', 50, 180)
+            .fontSize(12)
+            .fillColor('#333')
+            .text(`Traveler Name: ${travelerName}`, 50, 200)
+            .text(`Email: ${userEmail}`, 50, 220)
+            .moveDown();
+
+        doc
+            .fontSize(16)
+            .fillColor('#2c3e50')
+            .text('Trip Details', 50, 260)
+            .fontSize(12)
+            .fillColor('#333')
+            .text(`Destination: ${destination}`, 50, 280)
+            .text(`Travel Date: ${travelDate}`, 50, 300)
+            .text(`Number of Travelers: ${travelers}`, 50, 320)
+            .moveDown();
+
+        doc
+            .fontSize(16)
+            .fillColor('#2c3e50')
+            .text('Payment Details', 50, 360)
+            .fontSize(12)
+            .fillColor('#333')
+            .text(`Payment Method: ${paymentMethod}`, 50, 380)
+            .text(`Card Number: ****-****-****-${cardNumber.slice(-4)}`, 50, 400)
+            .text(`Amount: $${amount}`, 50, 420)
+            .moveDown();
+
+        // Footer
+        doc
+            .strokeColor('#e0e0e0')
+            .lineWidth(1)
+            .moveTo(50, 650)
+            .lineTo(550, 650)
+            .stroke();
+
+        doc
+            .fontSize(10)
+            .fillColor('#666')
+            .text('Thank you for choosing Travel Explorer!', 50, 670, { align: 'center' })
+            .text('📧 support@travelexplorer.com | 📞 +226 899 8936', 50, 690, { align: 'center' })
+            .text('© 2025 Travel Explorer. All rights reserved.', 50, 710, { align: 'center' });
+
+        doc.end();
+
+        // Send Professional Confirmation Email with PDF Attachment
+        const mailOptions = {
+            from: '"Travel Explorer" <travelexplorer923@gmail.com>',
+            to: userEmail,
+            subject: 'Your Travel Explorer Booking Confirmation 🌍',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                    <div style="text-align: center;">
+                        <h1 style="color: #2c3e50;">Travel Explorer</h1>
+                        <h2 style="color: #3498db;">Booking Confirmation</h2>
+                        <p style="font-size: 16px; color: #666;">Dear ${travelerName},</p>
+                    </div>
+                    <div style="margin: 20px 0;">
+                        <p style="font-size: 16px; color: #333;">Thank you for booking with Travel Explorer! We’re excited to help you embark on your next adventure. Below are your booking details:</p>
+                        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #e0e0e0; font-weight: bold;">Booking ID:</td>
+                                <td style="padding: 10px; border: 1px solid #e0e0e0;">${result.insertId}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #e0e0e0; font-weight: bold;">Traveler Name:</td>
+                                <td style="padding: 10px; border: 1px solid #e0e0e0;">${travelerName}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #e0e0e0; font-weight: bold;">Destination:</td>
+                                <td style="padding: 10px; border: 1px solid #e0e0e0;">${destination}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #e0e0e0; font-weight: bold;">Travel Date:</td>
+                                <td style="padding: 10px; border: 1px solid #e0e0e0;">${travelDate}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #e0e0e0; font-weight: bold;">Number of Travelers:</td>
+                                <td style="padding: 10px; border: 1px solid #e0e0e0;">${travelers}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #e0e0e0; font-weight: bold;">Payment Method:</td>
+                                <td style="padding: 10px; border: 1px solid #e0e0e0;">${paymentMethod}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #e0e0e0; font-weight: bold;">Amount:</td>
+                                <td style="padding: 10px; border: 1px solid #e0e0e0;">$${amount}</td>
+                            </tr>
+                        </table>
+                        <p style="font-size: 16px; color: #333;">We’ve attached your receipt for your records. If you have any questions, feel free to reach out to us.</p>
+                    </div>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <a href="https://10.180.82.20/index.html" style="background-color: #3498db; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">View More Destinations</a>
+                    </div>
+                    <div style="border-top: 1px solid #e0e0e0; padding-top: 20px; text-align: center;">
+                        <p style="font-size: 14px; color: #666;">We wish you a wonderful trip!</p>
+                        <p style="font-size: 14px; color: #666;">Best regards,<br>The Travel Explorer Team</p>
+                        <p style="font-size: 14px; color: #666;">📧 <a href="mailto:support@travelexplorer.com" style="color: #3498db;">support@travelexplorer.com</a> | 📞 +226 899 8936</p>
+                        <p style="font-size: 14px; color: #666;">© 2025 Travel Explorer. All rights reserved.</p>
+                    </div>
+                </div>
+            `,
+            attachments: [
+                {
+                    filename: `Travel_Explorer_Receipt_${result.insertId}.pdf`,
+                    path: pdfPath
+                }
+            ]
+        };
+
+        let attempt = 1;
+        const maxAttempts = 3;
+
+        const sendEmail = () => {
+            console.log(`Attempt ${attempt} to send email to: ${userEmail}`);
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error(`Error sending email on attempt ${attempt}:`, error);
+                    if (attempt < maxAttempts) {
+                        attempt++;
+                        setTimeout(sendEmail, 2000);
+                    } else {
+                        console.error('Max email attempts reached');
+                        // Clean up PDF file even if email fails
+                        fs.unlink(pdfPath, err => {
+                            if (err) console.error('Error deleting PDF:', err);
+                        });
+                    }
+                } else {
+                    console.log(`Email sent successfully on attempt ${attempt}:`, info.response);
+                    // Clean up PDF file after successful email
+                    fs.unlink(pdfPath, err => {
+                        if (err) console.error('Error deleting PDF:', err);
+                    });
+                }
+            });
+        };
+
+        sendEmail();
+
+        res.status(200).json({ message: 'Booking successful! A confirmation email with your receipt has been sent to your email.', redirect: '/index.html' });
+    });
+});
+
+// Start the Server
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

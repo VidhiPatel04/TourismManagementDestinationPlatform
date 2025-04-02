@@ -1,0 +1,62 @@
+[
+  {
+    "user": "pateldapuj@gmail.com",
+    "destination": "paris",
+    "amount": "100",
+    "travelDate": "2025-03-29",
+    "travelers": "1",
+    "travelerName": "darpan",
+    "paymentMethod": "Credit Card",
+    "date": "2025-03-26T22:12:30.797Z"
+  },
+  {
+    "user": "pateldapuj@gmail.com",
+    "destination": "paris",
+    "amount": "250",
+    "travelDate": "2025-03-31",
+    "travelers": "1",
+    "travelerName": "darpan",
+    "paymentMethod": "Credit Card",
+    "date": "2025-03-26T22:15:34.218Z"
+  },
+  {
+    "user": "pateldapuj@gmail.com",
+    "destination": "paris",
+    "amount": "100",
+    "travelDate": "2025-03-29",
+    "travelers": "1",
+    "travelerName": "darpan",
+    "paymentMethod": "Credit Card",
+    "date": "2025-03-26T22:21:24.736Z"
+  },
+  {
+    "user": "pateldapuj@gmail.com",
+    "destination": "paris",
+    "amount": "260",
+    "travelDate": "2025-03-31",
+    "travelers": "1",
+    "travelerName": "darpan",
+    "paymentMethod": "Credit Card",
+    "date": "2025-03-26T22:23:18.475Z"
+  },
+  {
+    "user": "pateldapuj@gmail.com",
+    "destination": "Paris",
+    "amount": "1000",
+    "travelDate": "2025-03-29",
+    "travelers": "1",
+    "travelerName": "darpan",
+    "paymentMethod": "Credit Card",
+    "date": "2025-03-26T22:32:30.695Z"
+  },
+  {
+    "user": "pateldapuj@gmail.com",
+    "destination": "New York",
+    "amount": "1000",
+    "travelDate": "2025-03-29",
+    "travelers": "1",
+    "travelerName": "Darpan patel",
+    "paymentMethod": "Credit Card",
+    "date": "2025-03-27T02:40:20.237Z"
+  }
+]
