@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Explorer - Discover Your Next Adventure</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <img src="images/logo.png" alt="Travel Explorer Logo" />
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#destinations">Destinations</a></li>
+                    <li><a href="#tour">Tour</a></li>
+                    <li><a href="#booking">Booking</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li id="signin-nav" style="display: none;"><a href="login.html">Sign In</a></li>
+                    <li id="signup-nav" style="display: none;"><a href="signup.html">Sign Up</a></li>
+                    <li id="logout-nav" style="display: none;"><a href="#" class="logout-link" onclick="logout()">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Home Section -->
+    <section id="home">
+        <h2>Welcome to Travel Explorer</h2>
+        <p>Discover breathtaking locations and plan your next adventure.</p>
+        <div class="header__image">
+            <img src="images/header.jpg" alt="Explore Your Next Destination" />
+            <div class="overlay-text">
+                <h1>Explore Your Next Destination</h1>
+            </div>
+        </div>
+    </section>
+
+    <!-- Destinations Section -->
+    <section id="destinations" class="destinations-section">
+        <h2>Popular Destinations</h2>
+        <div class="destination-gallery">
+            <div class="destination" data-destination="Paris">
+                <img src="./images/destination1.jpeg" alt="Paris, France">
+                <div class="destination-info">
+                    <h3>Paris, France</h3>
+                    <p>The City of Lights, known for the Eiffel Tower, Louvre Museum, and charming streets.</p>
+                    <button class="view-details-btn">View Details</button>
+                </div>
+            </div>
+            <div class="destination" data-destination="Bali">
+                <img src="./images/destination2.jpeg" alt="Bali, Indonesia">
+                <div class="destination-info">
+                    <h3>Bali, Indonesia</h3>
+                    <p>A tropical paradise with stunning beaches, rice terraces, and vibrant culture.</p>
+                    <button class="view-details-btn">View Details</button>
+                </div>
+            </div>
+            <div class="destination" data-destination="Tokyo">
+                <img src="./images/destination3.jpeg" alt="Tokyo, Japan">
+                <div class="destination-info">
+                    <h3>Tokyo, Japan</h3>
+                    <p>A bustling metropolis blending modern skyscrapers with traditional temples.</p>
+                    <button class="view-details-btn">View Details</button>
+                </div>
+            </div>
+            <div class="destination" data-destination="New York">
+                <img src="./images/destination4.jpeg" alt="New York, USA">
+                <div class="destination-info">
+                    <h3>New York, USA</h3>
+                    <p>The Big Apple, famous for Times Square, Statue of Liberty, and Broadway shows.</p>
+                    <button class="view-details-btn">View Details</button>
+                </div>
+            </div>
+            <div class="destination" data-destination="Banff">
+                <img src="./images/destination5.jpeg" alt="Banff, Canada">
+                <div class="destination-info">
+                    <h3>Banff, Canada</h3>
+                    <p>A scenic mountain town in the Rockies, perfect for hiking and skiing.</p>
+                    <button class="view-details-btn">View Details</button>
+                </div>
+            </div>
+            <div class="destination" data-destination="Kashmir">
+                <img src="./images/destination6.jpeg" alt="Kashmir, India">
+                <div class="destination-info">
+                    <h3>Kashmir, India</h3>
+                    <p>Known as "Paradise on Earth" with its stunning valleys and lakes.</p>
+                    <button class="view-details-btn">View Details</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Destination Details Modal -->
+    <div id="destination-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">×</span>
+            <div id="modal-image"></div>
+            <h3 id="modal-title"></h3>
+            <p id="modal-description"></p>
+            <div id="modal-highlights">
+                <h4>Highlights</h4>
+                <ul id="modal-highlights-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tour Section -->
+    <section id="tour">
+        <h2>Journey Beyond Limits, Travel with Ease!</h2>
+        <p>Your perfect adventure starts here with seamless planning, tailored experiences, and expert insights.</p>
+        <div class="tour-container">
+            <div class="tour-box">
+                <h3>Effortless Travel Planning</h3>
+                <p>Book your trip with ease—flights, stays, activities, and transfers all in one place. Travel planning has never been this simple.</p>
+            </div>
+            <div class="tour-box">
+                <h3>Personalized Itineraries</h3>
+                <p>Every journey is unique. Get a customized travel plan designed around your preferences, whether you're an adventurer or a cultural explorer.</p>
+            </div>
+            <div class="tour-box">
+                <h3>Local Secrets & Expert Tips</h3>
+                <p>Discover the best-kept secrets of every destination with our expert insights—authentic cuisine, hidden gems, and must-visit sights.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section id="booking" class="booking-section">
+        <h2>Book Your Trip</h2>
+        <div id="booking-content">
+            <!-- Booking form will be injected here if user is logged in -->
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <p>Email: <a href="mailto:support@travelexplorer.com">support@travelexplorer.com</a></p>
+        <p>Phone: +226 899 8936</p>
+    </section>
+
+    <!-- Reviews Section -->
+    <section id="reviews">
+        <h2>What Our Clients Say</h2>
+        <div class="reviews-container">
+            <div class="review">
+                <img src="./images/client1.jpeg" alt="Client 1">
+                <h3>Emily Johnson</h3>
+                <p class="stars">★★★★★</p>
+                <p>"Amazing trip! Everything was well organized, and the hotel selection was perfect."</p>
+            </div>
+            <div class="review">
+                <img src="./images/client2.jpeg" alt="Client 2">
+                <h3>Sarah Williams</h3>
+                <p class="stars">★★★★☆</p>
+                <p>"Great service, but the flight was a bit delayed. Overall, a fantastic experience!"</p>
+            </div>
+            <div class="review">
+                <img src="./images/client3.jpeg" alt="Client 3">
+                <h3>Michael Smith</h3>
+                <p class="stars">★★★★★</p>
+                <p>"Best vacation ever! Highly recommend this agency for hassle-free trips."</p>
+            </div>
+            <div class="review">
+                <img src="./images/client4.jpeg" alt="Client 4">
+                <h3>David Brown</h3>
+                <p class="stars">★★★</p>
+                <p>"Good experience, but I wish there were more customization options for the itinerary."</p>
+            </div>
+            <div class="review">
+                <img src="./images/client5.jpeg" alt="Client 5">
+                <h3>Linda Taylor</h3>
+                <p class="stars">★★★★</p>
+                <p>"Exceptional customer service and attention to detail. Will book again!"</p>
+            </div>
+            <div class="review">
+                <img src="./images/client6.jpeg" alt="Client 6">
+                <h3>Alexa Wilson</h3>
+                <p class="stars">★★★★</p>
+                <p>"Good pricing and well-planned trip. Just had some minor issues with hotel check-in."</p>
+            </div>
+            <div class="review">
+                <img src="./images/client7.jpeg" alt="Client 7">
+                <h3>Peter Larkin</h3>
+                <p class="stars">★★★★</p>
+                <p>"Highly professional service. The team ensured we had a comfortable and memorable trip!"</p>
+            </div>
+            <div class="review">
+                <img src="./images/client8.jpeg" alt="Client 8">
+                <h3>Emily Brown</h3>
+                <p class="stars">★★★★</p>
+                <p>"Absolutely loved the seamless booking experience. Everything was perfectly arranged!"</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>© 2025 Travel Explorer. All rights reserved.</p>
+    </footer>
+
+    <!-- Inline Script -->
+    <script>
+        // Check if user is logged in and toggle navigation options
+        fetch('/check-session', { method: 'GET' })
+            .then(response => response.json())
+            .then(result => {
+                const signInNav = document.getElementById('signin-nav');
+                const signUpNav = document.getElementById('signup-nav');
+                const logoutNav = document.getElementById('logout-nav');
+                const bookingContent = document.getElementById('booking-content');
+
+                if (result.isLoggedIn) {
+                    signInNav.style.display = 'none';
+                    signUpNav.style.display = 'none';
+                    logoutNav.style.display = 'block';
+
+                    // Show booking form for logged-in users
+                    bookingContent.innerHTML = `
+                        <form id="booking-form">
+                            <label for="clientname">Name:</label>
+                            <input type="text" id="clientname" name="clientname" class="form-control" required>
+
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" name="email" class="form-control" required>
+
+                            <label for="phone">Phone Number:</label>
+                            <input type="tel" id="phone" name="phone" class="form-control" required placeholder="+1234567890">
+
+                            <label for="destination">Select Destination:</label>
+                            <select id="destination" name="destination" class="form-control" required>
+                                <option value="Paris">Paris, France</option>
+                                <option value="Bali">Bali, Indonesia</option>
+                                <option value="Tokyo">Tokyo, Japan</option>
+                                <option value="New York">New York, USA</option>
+                                <option value="Banff">Banff, Canada</option>
+                                <option value="Kashmir">Kashmir, India</option>
+                            </select>
+
+                            <label for="departure_date">Travel Date:</label>
+                            <input type="date" id="departure_date" name="departure_date" class="form-control" required>
+
+                            <label for="passengers">Number of Travelers:</label>
+                            <input type="number" id="passengers" name="passengers" class="form-control" min="1" value="1" required>
+
+                            <label for="travelerName">Traveler Name:</label>
+                            <input type="text" id="travelerName" name="travelerName" class="form-control" required>
+
+                            <label for="paymentMethod">Payment Method:</label>
+                            <select id="paymentMethod" name="paymentMethod" class="form-control" required>
+                                <option value="" disabled selected>Select Payment Method</option>
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="Debit Card">Debit Card</option>
+                                <option value="PayPal">PayPal</option>
+                            </select>
+
+                            <label for="cardNumber">Card Number:</label>
+                            <input type="text" id="cardNumber" name="cardNumber" class="form-control" required>
+
+                            <button type="submit">Book Now</button>
+                            <button type="button" onclick="cancelBooking()" class="cancel-btn">Cancel</button>
+                        </form>
+                    ;
+
+                    // Add event listener for booking form
+                    document.getElementById('booking-form').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+
+                        const formData = {
+                            destination: document.getElementById('destination').value,
+                            amount: '1000',
+                            cardNumber: document.getElementById('cardNumber').value,
+                            travelDate: document.getElementById('departure_date').value,
+                            travelers: document.getElementById('passengers').value,
+                            travelerName: document.getElementById('travelerName').value,
+                            paymentMethod: document.getElementById('paymentMethod').value
+                        };
+
+                        console.log('Submitting booking form:', formData);
+
+                        try {
+                            const response = await fetch('/payment', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(formData)
+                            });
+
+                            const result = await response.json();
+                            console.log('Server response:', result);
+
+                            if (response.ok) {
+                                alert(result.message);
+                                window.location.href = result.redirect || '/index.html';
+                            } else {
+                                alert(result.message || 'Error processing payment');
+                            }
+                        } catch (error) {
+                            console.error('Error during booking:', error);
+                            alert('An error occurred while booking: ' + error.message + '. Please try again or contact support.');
+                        }
+                    });
+                } else {
+                    signInNav.style.display = 'block';
+                    signUpNav.style.display = 'block';
+                    logoutNav.style.display = 'none';
+
+                    // Show message for non-logged-in users
+                    bookingContent.innerHTML = `
+                        <p>Please <a href="login.html">sign in</a> or <a href="signup.html">sign up</a> to book your trip.</p>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error checking session:', error);
+                // Default to non-logged-in state on error
+                document.getElementById('signin-nav').style.display = 'block';
+                document.getElementById('signup-nav').style.display = 'block';
+                document.getElementById('logout-nav').style.display = 'none';
+                document.getElementById('booking-content').innerHTML = `
+                    <p>Please <a href="login.html">sign in</a> or <a href="signup.html">sign up</a> to book your trip.</p>
+                `;
+            });
+
+        function cancelBooking() {
+            if (confirm('Are you sure you want to cancel your booking?')) {
+                document.getElementById('booking-form').reset();
+                alert('Booking cancelled.');
+            }
+        }
+
+        function logout() {
+            fetch('/logout', { method: 'GET' })
+                .then(response => response.json())
+                .then(result => {
+                    alert('Logged out successfully!');
+                    window.location.href = '/login.html';
+                }
+                .catch(error => {
+                    console.error('Error during logout:', error);
+                    alert('Error during logout. Please try again.');
+                });
+            return false; // Prevent default link behavior
+        }
+
+    document.getElementById("bookingForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent form submission
+            window.location.href = "payment.html"; // Redirect to payment page
+        });
+
+        function cancelBooking() {
+            alert("Booking Canceled");
+            document.getElementById("bookingForm").reset();
+        }
+
+    </script>
+</body>
+</html>
+

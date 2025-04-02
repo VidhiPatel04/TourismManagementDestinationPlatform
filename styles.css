@@ -1,0 +1,32 @@
+.destinations {
+    padding: 40px 20px;
+    text-align: center;
+}
+.destinations h2 {
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+.destination-grid {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.destination {
+    width: 300px;
+    text-align: center;
+}
+.destination img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+.destination h3 {
+    font-size: 1.5em;
+    margin: 10px 0;
+}
+.destination p {
+    font-size: 1em;
+    color: #666;
+}

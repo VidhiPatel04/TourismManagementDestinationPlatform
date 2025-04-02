@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Travel Explorer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header style="background-image: url('images/header.jpg');">
+        <div class="logo">Travel Explorer</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="book.html">Book Now</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="register.html">Sign Up</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h1>Create Your Travel Explorer Account</h1>
+        <form id="signupForm">
+            <label for="firstName">First Name:</label>
+            <input type="text" id="firstName" name="firstName" required><br>
+            <label for="lastName">Last Name:</label>
+            <input type="text" id="lastName" name="lastName" required><br>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required><br>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required><br>
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" placeholder="1234567890" required><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required><br>
+            <button type="submit">Sign Up</button>
+        </form>
+        <p id="message"></p>
+        <p>If you don’t receive the activation email, please contact support at <a href="mailto:support@travelexplorer.com">support@travelexplorer.com</a>.</p>
+    </main>
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            try {
+                const response = await fetch('/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                document.getElementById('message').textContent = result.message;
+                if (result.redirect) {
+                    window.location.href = result.redirect;
+                }
+            } catch (error) {
+                document.getElementById('message').textContent = 'Error signing up. Please contact support.';
+            }
+        });
+
+        async function logout() {
+            const response = await fetch('/logout', { method: 'POST' });
+            const result = await response.json();
+            if (result.redirect) {
+                window.location.href = result.redirect;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Travel Explorer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Travel Explorer</div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="book.html">Book Now</a>
+            <a href="login.html">Login</a>
+            <a href="register.html">Sign Up</a>
+            <a href="#" onclick="logout()">Logout</a>
+        </nav>
+    </header>
+    <main>
+        <section class="form-container">
+            <h2>Make a Payment</h2>
+            <form id="paymentForm">
+                <label for="destination">Destination:</label>
+                <input type="text" id="destination" name="destination" required>
+                <label for="amount">Amount ($):</label>
+                <input type="number" id="amount" name="amount" step="0.01" required>
+                <label for="cardNumber">Card Number:</label>
+                <input type="text" id="cardNumber" name="cardNumber" required>
+                <button type="submit">Pay Now</button>
+            </form>
+            <p id="message"></p>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Travel Explorer. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const destination = document.getElementById('destination').value;
+            const amount = document.getElementById('amount').value;
+            const cardNumber = document.getElementById('cardNumber').value;
+
+            const response = await fetch('/payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ destination, amount, cardNumber })
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'receipt.pdf';
+                a.click();
+                window.URL.revokeObjectURL(url);
+            } else {
+                const result = await response.json();
+                document.getElementById('message').textContent = result.message;
+            }
+        });
+
+        async function logout() {
+            const response = await fetch('/logout', { method: 'POST' });
+            const result = await response.json();
+            alert(result.message);
+            if (result.redirect) window.location.href = result.redirect;
+        }
+    </script>
+</body>
+</html>

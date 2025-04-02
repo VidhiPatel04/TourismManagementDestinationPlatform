@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Explorer - Home</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <img src="images/logo.png" alt="Travel Explorer Logo" />
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#destinations">Destinations</a></li>
+                    <li><a href="#tour">Tour</a></li>
+                    <li><a href="#booking">Booking</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="#" onclick="logout()" class="logout-link">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Home Section -->
+    <section id="home">
+        <div class="header__image">
+            <img src="images/header.jpg" alt="Travel Destination">
+            <div class="overlay-text">
+                <h1>Explore the World with Travel Explorer</h1>
+            </div>
+        </div>
+    </section>
+
+    <!-- Destinations Section -->
+    <section id="destinations" class="destinations">
+        <h2>Popular Destinations</h2>
+        <div class="destination-grid">
+            <div class="destination">
+                <img src="images/destination1.jpeg" alt="Paris">
+                <h3>Paris</h3>
+                <p>Experience the romance of the Eiffel Tower and the charm of the Louvre.</p>
+                <button class="view-details-btn" onclick="openModal('Paris', 'Experience the romance of the Eiffel Tower and the charm of the Louvre.', 'images/destination1.jpeg', ['Eiffel Tower', 'Louvre Museum', 'Seine River Cruise'])">View Details</button>
+            </div>
+            <div class="destination">
+                <img src="images/destination2.jpeg" alt="New York">
+                <h3>New York</h3>
+                <p>Discover the vibrant energy of Times Square and the Statue of Liberty.</p>
+                <button class="view-details-btn" onclick="openModal('New York', 'Discover the vibrant energy of Times Square and the Statue of Liberty.', 'images/destination2.jpeg', ['Times Square', 'Statue of Liberty', 'Central Park'])">View Details</button>
+            </div>
+            <div class="destination">
+                <img src="images/destination3.jpeg" alt="Tokyo">
+                <h3>Tokyo</h3>
+                <p>Immerse yourself in the blend of tradition and modernity in Tokyo.</p>
+                <button class="view-details-btn" onclick="openModal('Tokyo', 'Immerse yourself in the blend of tradition and modernity in Tokyo.', 'images/destination3.jpeg', ['Shibuya Crossing', 'Tokyo Tower', 'Asakusa Temple'])">View Details</button>
+            </div>
+            <div class="destination">
+                <img src="images/destination4.jpeg" alt="Sydney">
+                <h3>Sydney</h3>
+                <p>Enjoy the stunning views of the Sydney Opera House and Bondi Beach.</p>
+                <button class="view-details-btn" onclick="openModal('Sydney', 'Enjoy the stunning views of the Sydney Opera House and Bondi Beach.', 'images/destination4.jpeg', ['Sydney Opera House', 'Bondi Beach', 'Harbour Bridge'])">View Details</button>
+            </div>
+            <div class="destination">
+                <img src="images/destination5.jpeg" alt="Rome">
+                <h3>Rome</h3>
+                <p>Step back in time with the Colosseum and the Roman Forum.</p>
+                <button class="view-details-btn" onclick="openModal('Rome', 'Step back in time with the Colosseum and the Roman Forum.', 'images/destination5.jpeg', ['Colosseum', 'Roman Forum', 'Vatican City'])">View Details</button>
+            </div>
+            <div class="destination">
+                <img src="images/destination6.jpeg" alt="Cape Town">
+                <h3>Cape Town</h3>
+                <p>Explore the natural beauty of Table Mountain and the Cape Peninsula.</p>
+                <button class="view-details-btn" onclick="openModal('Cape Town', 'Explore the natural beauty of Table Mountain and the Cape Peninsula.', 'images/destination6.jpeg', ['Table Mountain', 'Cape Peninsula', 'Robben Island'])">View Details</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal for Destination Details -->
+    <div id="destination-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div id="modal-image"></div>
+            <h2 id="modal-title"></h2>
+            <p id="modal-description"></p>
+            <div id="modal-highlights">
+                <h4>Highlights</h4>
+                <ul id="modal-highlights-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tour Section -->
+    <section id="tour">
+        <h2>Our Tours</h2>
+        <div class="tour-container">
+            <div class="tour-box">
+                <h3>City Explorer</h3>
+                <p>Discover the best cities with guided tours and local insights.</p>
+            </div>
+            <div class="tour-box">
+                <h3>Adventure Seeker</h3>
+                <p>Experience thrilling adventures in breathtaking landscapes.</p>
+            </div>
+            <div class="tour-box">
+                <h3>Cultural Journey</h3>
+                <p>Immerse yourself in the traditions and history of your destination.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section id="booking" class="booking-section">
+        <h2>Book Your Trip</h2>
+        <form id="booking-form">
+            <div id="form-error" class="error-message" style="display: none;"></div>
+            <div id="form-success" class="success-message" style="display: none;"></div>
+            <div class="form-group">
+                <label for="client_name">Client Name</label>
+                <input type="text" id="client_name" name="client_name" class="form-control" placeholder="Enter your name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" class="form-control" placeholder="Enter your phone number">
+            </div>
+            <div class="form-group">
+                <label for="destination">Destination</label>
+                <select id="destination" name="destination" class="form-control" required>
+                    <option value="" disabled selected>Select your destination</option>
+                    <option value="Paris">Paris</option>
+                    <option value="New York">New York</option>
+                    <option value="Tokyo">Tokyo</option>
+                    <option value="Sydney">Sydney</option>
+                    <option value="Rome">Rome</option>
+                    <option value="Cape Town">Cape Town</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="departure_date">Departure Date</label>
+                <input type="date" id="departure_date" name="departure_date" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="return_date">Return Date (Optional)</label>
+                <input type="date" id="return_date" name="return_date" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="passengers">Number of Passengers</label>
+                <input type="number" id="passengers" name="passengers" class="form-control" min="1" required>
+            </div>
+            <div class="form-group">
+                <label for="payment_method">Payment Method</label>
+                <select id="payment_method" name="payment_method" class="form-control" required>
+                    <option value="" disabled selected>Select payment method</option>
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="Debit Card">Debit Card</option>
+                    <option value="PayPal">PayPal</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="amount">Amount ($)</label>
+                <input type="number" id="amount" name="amount" class="form-control" min="0" step="0.01" required>
+            </div>
+            <button type="submit">Proceed to Payment</button>
+            <button type="button" onclick="cancelBooking()" class="cancel-btn">Cancel</button>
+        </form>
+    </section>
+
+    <!-- Reviews Section -->
+    <section id="reviews">
+        <h2>What Our Clients Say</h2>
+        <div class="reviews-container">
+            <div class="review">
+                <img src="images/client1.jpeg" alt="Client 1">
+                <h3>John Doe</h3>
+                <p>"An amazing experience in Paris! The tour was well-organized."</p>
+                <div class="stars">★★★★★</div>
+            </div>
+            <div class="review">
+                <img src="images/client2.jpeg" alt="Client 2">
+                <h3>Jane Smith</h3>
+                <p>"Loved the adventure tour in Tokyo. Highly recommend!"</p>
+                <div class="stars">★★★★★</div>
+            </div>
+            <div class="review">
+                <img src="images/client3.jpeg" alt="Client 3">
+                <h3>Michael Brown</h3>
+                <p>"The cultural journey in Rome was unforgettable."</p>
+                <div class="stars">★★★★★</div>
+            </div>
+            <div class="review">
+                <img src="images/client4.jpeg" alt="Client 4">
+                <h3>Emily Davis</h3>
+                <p>"Sydney's beaches and landmarks were breathtaking!"</p>
+                <div class="stars">★★★★★</div>
+            </div>
+            <div class="review">
+                <img src="images/client5.jpeg" alt="Client 5">
+                <h3>David Wilson</h3>
+                <p>"Cape Town's natural beauty was beyond words."</p>
+                <div class="stars">★★★★★</div>
+            </div>
+            <div class="review">
+                <img src="images/client6.jpeg" alt="Client 6">
+                <h3>Sarah Johnson</h3>
+                <p>"New York's energy is unmatched. Great tour!"</p>
+                <div class="stars">★★★★★</div>
+            </div>
+            <div class="review">
+                <img src="images/client7.jpeg" alt="Client 7">
+                <h3>Chris Lee</h3>
+                <p>"The Paris tour was romantic and well-planned."</p>
+                <div class="stars">★★★★★</div>
+            </div>
+            <div class="review">
+                <img src="images/client8.jpeg" alt="Client 8">
+                <h3>Laura Adams</h3>
+                <p>"Tokyo's culture and modernity were fascinating."</p>
+                <div class="stars">★★★★★</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <p>Email: <a href="mailto:support@travelexplorer.com">support@travelexplorer.com</a></p>
+        <p>Phone: <a href="tel:+1234567890">+1 (234) 567-890</a></p>
+    </section>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>© 2025 Travel Explorer. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Check session on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/check-session', { credentials: 'include' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Session check response:', data);
+                    if (!data.isLoggedIn) {
+                        alert('Please log in to access this page.');
+                        window.location.href = '/login.html';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking session:', error);
+                    alert('Error checking session. Please try again.');
+                    window.location.href = '/login.html';
+                });
+
+            // Check for query parameter message
+            const urlParams = new URLSearchParams(window.location.search);
+            const message = urlParams.get('message');
+            if (message) {
+                alert(decodeURIComponent(message));
+            }
+        });
+
+        // Function to fetch CSRF token with retry mechanism
+        async function fetchCsrfToken(retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch('/get-csrf-token', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    if (!data.csrfToken) {
+                        throw new Error('CSRF token not found in response');
+                    }
+                    console.log('Fetched CSRF token:', data.csrfToken);
+                    return data.csrfToken;
+                } catch (error) {
+                    console.error(`Attempt ${i + 1} to fetch CSRF token failed:`, error.message);
+                    if (i < retries - 1) {
+                        console.log(`Retrying in ${delay}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    } else {
+                        throw new Error('Failed to fetch CSRF token after retries');
+                    }
+                }
+            }
+        }
+
+        // Add event listener for booking form
+        document.getElementById('booking-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const bookingData = {
+                client_name: document.getElementById('client_name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                destination: document.getElementById('destination').value,
+                departure_date: document.getElementById('departure_date').value,
+                return_date: document.getElementById('return_date').value,
+                passengers: document.getElementById('passengers').value,
+                payment_method: document.getElementById('payment_method').value,
+                amount: document.getElementById('amount').value
+            };
+
+            console.log('Submitting booking form:', bookingData);
+
+            const errorDiv = document.getElementById('form-error');
+            const successDiv = document.getElementById('form-success');
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            successDiv.style.display = 'none';
+            successDiv.textContent = '';
+
+            try {
+                const csrfToken = await fetchCsrfToken();
+                console.log('Submitting form with CSRF token:', csrfToken);
+
+                // Store booking data in sessionStorage
+                sessionStorage.setItem('bookingData', JSON.stringify(bookingData));
+
+                successDiv.textContent = 'Booking details saved! Redirecting to payment...';
+                successDiv.style.display = 'block';
+
+                setTimeout(() => {
+                    window.location.href = '/payment.html';
+                }, 2000);
+            } catch (error) {
+                console.error('Error during booking:', error);
+                errorDiv.textContent = 'Error: ' + error.message + '. Please try again or contact support.';
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        function cancelBooking() {
+            if (confirm('Are you sure you want to cancel your booking?')) {
+                document.getElementById('booking-form').reset();
+            }
+        }
+
+        function logout() {
+            fetch('/logout', { 
+                method: 'GET',
+                credentials: 'include'
+            })
+                .then(response => response.json())
+                .then(result => {
+                    alert('Logged out successfully!');
+                    window.location.href = '/login.html';
+                })
+                .catch(error => {
+                    console.error('Error during logout:', error);
+                    alert('Error during logout. Please try again.');
+                });
+            return false;
+        }
+
+        // Modal Functions
+        function openModal(title, description, imageSrc, highlights) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-description').textContent = description;
+            document.getElementById('modal-image').innerHTML = `<img src="${imageSrc}" alt="${title}">`;
+            
+            const highlightsList = document.getElementById('modal-highlights-list');
+            highlightsList.innerHTML = '';
+            highlights.forEach(highlight => {
+                const li = document.createElement('li');
+                li.textContent = highlight;
+                highlightsList.appendChild(li);
+            });
+
+            document.getElementById('destination-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('destination-modal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('destination-modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+    </script>
+</body>
+</html>

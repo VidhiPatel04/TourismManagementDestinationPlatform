@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Explorer - Payment</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <img src="images/logo.png" alt="Travel Explorer Logo" />
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#destinations">Destinations</a></li>
+                    <li><a href="index.html#tour">Tour</a></li>
+                    <li><a href="index.html#booking">Booking</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                    <li><a href="#" onclick="logout()" class="logout-link">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Payment Section -->
+    <section id="payment" class="payment-section">
+        <div class="payment-container">
+            <h2>Complete Your Payment</h2>
+            <form id="payment-form" class="payment-form">
+                <div id="form-error" class="error-message" style="display: none;"></div>
+                <div id="form-success" class="success-message" style="display: none;"></div>
+
+                <!-- Booking Summary -->
+                <div class="payment-card">
+                    <h3>Booking Summary</h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <span class="summary-label">Client Name:</span>
+                            <span id="summary-client-name" class="summary-value"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Email:</span>
+                            <span id="summary-email" class="summary-value"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Phone:</span>
+                            <span id="summary-phone" class="summary-value"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Destination:</span>
+                            <span id="summary-destination" class="summary-value"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Departure Date:</span>
+                            <span id="summary-departure-date" class="summary-value"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Return Date:</span>
+                            <span id="summary-return-date" class="summary-value"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Passengers:</span>
+                            <span id="summary-passengers" class="summary-value"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Payment Method:</span>
+                            <span id="summary-payment-method" class="summary-value"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Amount:</span>
+                            <span id="summary-amount" class="summary-value"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Information -->
+                <div class="payment-card">
+                    <h3>Payment Information</h3>
+                    <div class="form-group">
+                        <label for="card_number">Card Number</label>
+                        <input type="text" id="card_number" name="card_number" class="form-control" placeholder="Enter your card number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cardholder_name">Cardholder Name</label>
+                        <input type="text" id="cardholder_name" name="cardholder_name" class="form-control" placeholder="Enter cardholder name">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label for="expiry">Expiry (MM/YY)</label>
+                            <input type="text" id="expiry" name="expiry" class="form-control" placeholder="MM/YY">
+                        </div>
+                        <div class="form-group half-width">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" name="cvv" class="form-control" placeholder="CVV">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing Address -->
+                <div class="payment-card">
+                    <h3>Billing Address</h3>
+                    <div class="form-group">
+                        <label for="street_address">Street Address</label>
+                        <input type="text" id="street_address" name="street_address" class="form-control" placeholder="Enter street address">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label for="city">City</label>
+                            <input type="text" id="city" name="city" class="form-control" placeholder="Enter city">
+                        </div>
+                        <div class="form-group half-width">
+                            <label for="state">State</label>
+                            <input type="text" id="state" name="state" class="form-control" placeholder="Enter state">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="zip_code">Zip Code</label>
+                        <input type="text" id="zip_code" name="zip_code" class="form-control" placeholder="Enter zip code">
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Submit Payment</button>
+                    <button type="button" onclick="cancelPayment()" class="btn btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>© 2025 Travel Explorer. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Function to fetch CSRF token with retry mechanism
+        async function fetchCsrfToken(retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch('/get-csrf-token', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    if (!data.csrfToken) {
+                        throw new Error('CSRF token not found in response');
+                    }
+                    console.log('Fetched CSRF token:', data.csrfToken);
+                    return data.csrfToken;
+                } catch (error) {
+                    console.error(`Attempt ${i + 1} to fetch CSRF token failed:`, error.message);
+                    if (i < retries - 1) {
+                        console.log(`Retrying in ${delay}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    } else {
+                        throw new Error('Failed to fetch CSRF token after retries');
+                    }
+                }
+            }
+        }
+
+        // Load booking data from sessionStorage
+        const bookingData = JSON.parse(sessionStorage.getItem('bookingData'));
+        if (!bookingData) {
+            alert('No booking data found. Please start the booking process again.');
+            window.location.href = '/index.html';
+        } else {
+            // Display booking summary
+            document.getElementById('summary-client-name').textContent = bookingData.client_name;
+            document.getElementById('summary-email').textContent = bookingData.email;
+            document.getElementById('summary-phone').textContent = bookingData.phone || 'Not provided';
+            document.getElementById('summary-destination').textContent = bookingData.destination;
+            document.getElementById('summary-departure-date').textContent = bookingData.departure_date;
+            document.getElementById('summary-return-date').textContent = bookingData.return_date || 'Not provided';
+            document.getElementById('summary-passengers').textContent = bookingData.passengers;
+            document.getElementById('summary-payment-method').textContent = bookingData.payment_method;
+            document.getElementById('summary-amount').textContent = `$${bookingData.amount}`;
+        }
+
+        // Add event listener for payment form
+        document.getElementById('payment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const paymentData = {
+                ...bookingData,
+                card_number: document.getElementById('card_number').value,
+                cardholder_name: document.getElementById('cardholder_name').value,
+                expiry: document.getElementById('expiry').value,
+                cvv: document.getElementById('cvv').value,
+                street_address: document.getElementById('street_address').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                zip_code: document.getElementById('zip_code').value,
+                payment_status: 'Completed'
+            };
+
+            console.log('Submitting payment form:', paymentData);
+
+            const errorDiv = document.getElementById('form-error');
+            const successDiv = document.getElementById('form-success');
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            successDiv.style.display = 'none';
+            successDiv.textContent = '';
+
+            try {
+                const csrfToken = await fetchCsrfToken();
+                console.log('Submitting payment with CSRF token:', csrfToken);
+
+                const response = await fetch('/payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(paymentData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('Server response:', result);
+
+                if (result.redirect) {
+                    successDiv.textContent = result.message;
+                    successDiv.style.display = 'block';
+                    sessionStorage.removeItem('bookingData');
+                    setTimeout(() => {
+                        window.location.href = result.redirect;
+                    }, 2000);
+                } else {
+                    throw new Error(result.message || 'Payment failed');
+                }
+            } catch (error) {
+                console.error('Error during payment:', error);
+                errorDiv.textContent = 'Error: ' + error.message + '. Please try again or contact support.';
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        function cancelPayment() {
+            if (confirm('Are you sure you want to cancel your payment?')) {
+                sessionStorage.removeItem('bookingData');
+                window.location.href = '/index.html';
+            }
+        }
+
+        function logout() {
+            fetch('/logout', { 
+                method: 'GET',
+                credentials: 'include'
+            })
+                .then(response => response.json())
+                .then(result => {
+                    alert('Logged out successfully!');
+                    window.location.href = '/login.html';
+                })
+                .catch(error => {
+                    console.error('Error during logout:', error);
+                    alert('Error during logout. Please try again.');
+                });
+            return false;
+        }
+    </script>
+</body>
+</html>
